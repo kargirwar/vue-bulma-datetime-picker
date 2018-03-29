@@ -5,12 +5,16 @@
                 //span Content
                 //span.icon.is-small
                     //i.fas.fa-angle-down(aria-hidden='true')
-            input.input(@focus="isActive = true" @blur="isActive = false")
+            input.input(@focus="isActive = true")
         #dropdown-menu2.dropdown-menu(role='menu')
             .dropdown-content
                 .columns
-                    .column {{month1}} {{year1}}
-                    .column {{month2}} {{year2}}
+                    .column.is-1(@click="prevMonth")
+                        i.fas.fa-chevron-left                   
+                    .column.is-5.has-text-centered {{month1}} {{year1}}
+                    .column.is-5.has-text-centered {{month2}} {{year2}}
+                    .column.is-1(@click="nextMonth")
+                        i.fas.fa-chevron-right                
                 .columns
                     .column
                         table.table.is-narrow
@@ -81,6 +85,39 @@ export default {
         this.render();
     },
     methods: {
+        prevMonth: function() {
+            console.log("Prev month");
+            var mY1 = Moment().month(this.month1).year(this.year1);
+            mY1.subtract(1, 'months');
+            this.month1 = mY1.format('MMM');
+            this.year1 = mY1.format('YYYY');
+            this.m1['weeks'] = [];
+
+            var mY2 = Moment().month(this.month2).year(this.year2);
+            mY2.subtract(1, 'months');
+            this.month2 = mY2.format('MMM');
+            this.year2 = mY2.format('YYYY');
+            this.m2['weeks'] = [];
+
+            this.render();
+        },
+        nextMonth: function() {
+            console.log("Next month");
+            var mY1 = Moment().month(this.month1).year(this.year1);
+            mY1.add(1, 'months');
+            this.month1 = mY1.format('MMM');
+            this.year1 = mY1.format('YYYY');
+            this.m1['weeks'] = [];
+
+            var mY2 = Moment().month(this.month2).year(this.year2);
+            mY2.add(1, 'months');
+            this.month2 = mY2.format('MMM');
+            this.year2 = mY2.format('YYYY');
+            this.m2['weeks'] = [];
+
+            this.render();
+
+        },
         render: function() {
             //month of the starting date
             var mY1 = Moment().month(this.month1).year(this.year1);
