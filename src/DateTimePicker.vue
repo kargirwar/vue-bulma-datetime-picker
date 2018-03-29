@@ -1,19 +1,15 @@
 <template lang="pug">
     .dropdown.is-right(v-bind:class="{'is-active': isActive}")
         .dropdown-trigger
-            //button.button(aria-haspopup='true', aria-controls='dropdown-menu2')
-                //span Content
-                //span.icon.is-small
-                    //i.fas.fa-angle-down(aria-hidden='true')
-            input.input(@focus="isActive = true")
+            input.input(@click="isActive = true")
         #dropdown-menu2.dropdown-menu(role='menu')
             .dropdown-content
                 .columns
-                    .column.is-1(@click="prevMonth")
+                    .column.is-1.prevMonth(v-on:click.prevent.stop="prevMonth")
                         i.fas.fa-chevron-left                   
                     .column.is-5.has-text-centered {{month1}} {{year1}}
                     .column.is-5.has-text-centered {{month2}} {{year2}}
-                    .column.is-1(@click="nextMonth")
+                    .column.is-1.nextMonth(@click="nextMonth")
                         i.fas.fa-chevron-right                
                 .columns
                     .column
@@ -33,6 +29,10 @@
                             tbody
                                 tr(v-for="week in m2.weeks")
                                     td(v-for="d in week") {{d}}
+                .columns
+                    .column
+                        button.button.is-primary Apply
+                        button.button(@click="isActive = false") Cancel
 </template>
 
 <script>
@@ -146,3 +146,9 @@ export default {
     }
 }
 </script>
+<style scoped>
+    .prevMonth,
+    .nextMonth {
+        cursor: pointer
+    }
+</style>
