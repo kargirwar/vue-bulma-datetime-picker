@@ -19,7 +19,9 @@
                                     th(v-for="day in days") {{day}}
                             tbody
                                 tr(v-for="week in m1.weeks")
-                                    td(v-for="d in week") {{d}}
+                                    td(
+                                        v-bind:class="d.style"
+                                        v-for="d in week") {{d.moment.date}}
 
                     .column
                         table.table.is-narrow
@@ -28,7 +30,9 @@
                                     th(v-for="day in days") {{day}}
                             tbody
                                 tr(v-for="week in m2.weeks")
-                                    td(v-for="d in week") {{d}}
+                                    td(
+                                        v-bind:class="d.style"
+                                        v-for="d in week") {{d.moment.date}}
                 .columns
                     .column
                         button.button.is-primary Apply
@@ -129,7 +133,7 @@ export default {
         },
         fillCalendar: function(m, weeks) {
             console.log("m: " + JSON.stringify(m));
-            m = m.startOf('month').startOf('week').clone();
+            var m = m.startOf('month').startOf('week').clone();
             var isToday = false;
             var isOtherMonth = false;
             var isSelected = false;
@@ -137,11 +141,23 @@ export default {
             for (var i = 0; i < ROWS; i++) {
                 var week = []
                 for (var j = 0; j < COLUMNS; j++) {
-                    week.push(m.format('D'));
+                    week.push({
+                        moment: m.toObject(),
+                        style: this.getStyle(m)
+                    });
                     m.add(1, 'days');
                 }
                 weeks.push(week);
             }
+        },
+        getStyle: function(m) {
+            var style = {};
+            var now = Moment();
+            if (m.isSame(now, 'day')) {
+                //today
+                style['has-text-danger'] = true;
+            }
+            return style;
         }
     }
 }
