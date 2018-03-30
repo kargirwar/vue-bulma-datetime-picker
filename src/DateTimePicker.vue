@@ -22,6 +22,7 @@
                                     td(
                                         v-bind:class="d.style"
                                         @click="onClick(d)"
+                                        @mouseover="highlightRange(d)"
                                         v-for="d in week") {{d.moment.date}}
 
                     .column
@@ -34,6 +35,7 @@
                                     td(
                                         v-bind:class="d.style"
                                         @click="onClick(d)"
+                                        @mouseover="highlightRange(d)"
                                         v-for="d in week") {{d.moment.date}}
                 .columns
                     .column
@@ -45,6 +47,11 @@
 import Moment from 'moment';
 const ROWS = 6;
 const COLUMNS = 7;
+const F_0_S_0 = "f-0-s-0";
+const F_1_S_0 = "f-1-s-0";
+const F_1_S_1 = "f-1-s-1";
+const F_0_S_1 = "f-1-s-1";//invalid state
+const REF_FORMAT = 'YYYY-MM-DD';
 
 export default {
     props: {
@@ -68,6 +75,7 @@ export default {
             m2: {
                 weeks: []
             },
+            refs: {},
             d1: null,
             d2: null,
             month1: '',
@@ -75,6 +83,7 @@ export default {
             month2: '',
             year2: '',
             isActive: false,
+            state: F_0_S_0,
             days: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
         }
     },
@@ -90,13 +99,101 @@ export default {
         this.render();
     },
     methods: {
-        onClick: function(d) {
-            if (this.d1) {
-                //unselect already selected one
-                this.d1.style.selected = false;
+        highlightRange: function(curr) {
+            switch (this.state) {
+            case F_0_S_0:
+            case F_1_S_1:
+                return;
             }
+
+            //if a date has been selected highlight all 
+            //dates upto d
+            var weeks = [this.m1.weeks, this.m2.weeks];	
+
+            for (var k = 0; k < weeks.length; k++) {
+                for (var i = 0; i < weeks[k].length; i++) {
+                    for (var j = 0; j < weeks[k][i].length; j++) {
+                        var d = weeks[k][i][j];
+                        var m = Moment(d.moment);
+                        if (m.isAfter(this.d1.moment) && m.isSameOrBefore(curr.moment)) {
+                            d.style.range = true;
+                        } else {
+                            d.style.range = false;
+                        }
+
+                        //console.log(
+                        //"d1: " + Moment(this.d1.moment).format('DD-MMM') +
+                        //" m: " + m.format('DD-MMM') +
+                        //" curr: " + Moment(curr.moment).format('DD-MMM') + 
+                        //" range: " + d.style.range);
+                    }
+                }
+            }
+        },
+        onClick: function(d) {
+            switch (this.state) {
+            case F_0_S_0:
+                this.f0s0(d);
+                break;
+            case F_1_S_0:
+                this.f1s0(d);
+                break;
+            case F_1_S_1:
+                this.f1s1(d);
+                break;
+            case F_0_S_1:
+                return;
+            }
+        },
+        f0s0: function(d) {
+            //no date selected yet
             this.d1 = d;
             this.d1.style.selected = true;
+            this.state = F_1_S_0;
+        },
+        f1s0: function(d) {
+            //check if second date is after first, otherwise mark this as the first date
+            if (Moment(d.moment).isSameOrAfter(this.d1.moment)) {
+                this.d2 = d;
+                this.d2.style.selected = true;
+                this.d2.style.range = false;
+                this.state = F_1_S_1;
+                this.showSelectedRange();
+                return;
+            }
+
+            this.d1 = d;
+            this.d2 = null;
+            this.d1.style.selected = true;
+            this.state = F_1_S_0;
+        },
+        f1s1: function(d) {
+            //unselect already selected ones. start afresh
+            this.clearRange();
+            this.d1.style.selected = null;
+            this.d2.style.selected = null;
+            this.d1 = null;
+            this.d2 = null;
+            this.f0s0(d);
+        },
+        clearRange: function() {
+            var start = Moment(this.d1.moment);
+            var m = start.add(1, 'days');
+            while (m.isBefore(this.d2.moment)) {
+                var d = this.refs[m.format(REF_FORMAT)];
+                d.style.range = false;
+                m.add(1, 'days');
+            }
+        },
+        showSelectedRange: function() {
+            //from d1 through d2 set range = true
+            var start = Moment(this.d1.moment);
+            var m = start.add(1, 'days');
+            while (m.isBefore(this.d2.moment)) {
+                var d = this.refs[m.format(REF_FORMAT)];
+                d.style.range = true;
+                m.add(1, 'days');
+            }
         },
         prevMonth: function() {
             var mY1 = Moment().month(this.month1).year(this.year1);
@@ -149,6 +246,7 @@ export default {
                         style: this.getStyle(m)
                     };
                     week.push(d);
+                    this.refs[m.format(REF_FORMAT)] = d;
                     m.add(1, 'days');
                 }
                 weeks.push(week);
@@ -158,6 +256,7 @@ export default {
             var style = {
                 today: false,
                 selected: false,
+                range: false
             };
             var now = Moment();
             if (m.isSame(now, 'day')) {
@@ -180,6 +279,10 @@ export default {
         color: $danger;
     }
     .selected {
-        color: $info;
+        background: #357ebd;
+        color:#fff
+    }
+    .range {
+        background: #ebf4f8;
     }
 </style>
