@@ -162,6 +162,8 @@ export default {
                 return;
             }
 
+            //unselect the original d1 and set a new d1
+            this.d1.style.selected = false;
             this.d1 = d;
             this.d2 = null;
             this.d1.style.selected = true;
@@ -262,6 +264,24 @@ export default {
             if (m.isSame(now, 'day')) {
                 //today
                 style.today = true;
+            }
+
+            switch (this.state) {
+            case F_1_S_0:
+                if (m.isSame(this.d1.moment)) {
+                    style.selected = true;
+                }
+                break;
+
+            case F_1_S_1:
+                if (m.isSame(this.d1.moment) || m.isSame(this.d2.moment)) {
+                    style.selected = true;
+                }
+
+                if (m.isAfter(this.d1.moment) && m.isBefore(this.d2.moment)) {
+                    style.range = true;
+                }
+                break;
             }
             return style;
         }
