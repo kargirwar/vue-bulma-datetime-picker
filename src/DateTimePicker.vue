@@ -21,6 +21,7 @@
                                 tr(v-for="week in m1.weeks")
                                     td(
                                         v-bind:class="d.style"
+                                        @click="onClick(d)"
                                         v-for="d in week") {{d.moment.date}}
 
                     .column
@@ -32,6 +33,7 @@
                                 tr(v-for="week in m2.weeks")
                                     td(
                                         v-bind:class="d.style"
+                                        @click="onClick(d)"
                                         v-for="d in week") {{d.moment.date}}
                 .columns
                     .column
@@ -60,8 +62,14 @@ export default {
     },
     data () {
         return {
-            m1: {},
-            m2: {},
+            m1: {
+                weeks: []
+            },
+            m2: {
+                weeks: []
+            },
+            d1: null,
+            d2: null,
             month1: '',
             year1: '',
             month2: '',
@@ -71,13 +79,6 @@ export default {
         }
     },
     created() {
-        console.log("start: " + this.start);
-        console.log("format: " + this.format);
-
-        this.m1['weeks'] = [];
-        this.m2['weeks'] = [];
-
-        console.log(Moment(this.start, this.format).format('DD-MM-YYYY'));
         var m1 = Moment(this.start, this.format);
         this.month1 = m1.format('MMM');
         this.year1 = m1.format('YYYY');
@@ -89,8 +90,15 @@ export default {
         this.render();
     },
     methods: {
+        onClick: function(d) {
+            if (this.d1) {
+                //unselect already selected one
+                this.d1.style.selected = false;
+            }
+            this.d1 = d;
+            this.d1.style.selected = true;
+        },
         prevMonth: function() {
-            console.log("Prev month");
             var mY1 = Moment().month(this.month1).year(this.year1);
             mY1.subtract(1, 'months');
             this.month1 = mY1.format('MMM');
@@ -106,7 +114,6 @@ export default {
             this.render();
         },
         nextMonth: function() {
-            console.log("Next month");
             var mY1 = Moment().month(this.month1).year(this.year1);
             mY1.add(1, 'months');
             this.month1 = mY1.format('MMM');
@@ -132,39 +139,47 @@ export default {
             this.fillCalendar(mY2, this.m2['weeks']);
         },
         fillCalendar: function(m, weeks) {
-            console.log("m: " + JSON.stringify(m));
             var m = m.startOf('month').startOf('week').clone();
-            var isToday = false;
-            var isOtherMonth = false;
-            var isSelected = false;
             //we want a 7x7 grid starting from the sunday of the week for the 1st of month
             for (var i = 0; i < ROWS; i++) {
                 var week = []
                 for (var j = 0; j < COLUMNS; j++) {
-                    week.push({
+                    var d = {
                         moment: m.toObject(),
                         style: this.getStyle(m)
-                    });
+                    };
+                    week.push(d);
                     m.add(1, 'days');
                 }
                 weeks.push(week);
             }
         },
         getStyle: function(m) {
-            var style = {};
+            var style = {
+                today: false,
+                selected: false,
+            };
             var now = Moment();
             if (m.isSame(now, 'day')) {
                 //today
-                style['has-text-danger'] = true;
+                style.today = true;
             }
             return style;
         }
     }
 }
 </script>
-<style scoped>
+<style lang="scss" scoped>
+    @import "../node_modules/bulma/bulma.sass";
+    td,
     .prevMonth,
     .nextMonth {
         cursor: pointer
+    }
+    .today {
+        color: $danger;
+    }
+    .selected {
+        color: $info;
     }
 </style>
