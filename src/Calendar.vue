@@ -37,6 +37,8 @@ export default {
         return {
             weeks: [],
             refs: {},
+            d1: null,
+            d2: null,
             days: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
         }
     },
@@ -47,9 +49,52 @@ export default {
         mY: function(n, o) {
             console.log('Changed mY');
             this.fillCalendar();
+        },
+        store: {
+            handler(n, o) {
+                console.log("Updating");
+                console.log("o: " + JSON.stringify(o));
+                console.log("n: " + JSON.stringify(n));
+                this.update(n, o);
+            },
+            deep: true
         }
     },
     methods: {
+        isEmpty: function(obj) {
+            //https://stackoverflow.com/questions/679915/how-do-i-test-for-an-empty-javascript-object
+            for(var prop in obj) {
+                if(obj.hasOwnProperty(prop))
+                return false;
+            }
+
+            return JSON.stringify(obj) === JSON.stringify({});
+        },
+        update: function(n, o) {
+            console.log("state: " + n.state);
+            switch (n.state) {
+            case F_1_S_0:
+                this.f1s0(n, o);
+                break;
+            }
+        },
+        f1s0: function(n, o) {
+            var d;
+            if (this.d1) {
+                //unselect already selected , if any
+                d = this.refs[this.d1.format(REF_FORMAT)];
+                if (d) {
+                    d.style.selected = false;
+                }
+            }
+            //save the new d1
+            this.d1 = n.d1;
+            d = this.refs[this.d1.format(REF_FORMAT)];
+            console.log("d: " + JSON.stringify(d));
+            if (d) {
+                d.style.selected = true;
+            }
+        },
         highlightRange: function(curr) {
             switch (this.state) {
             case F_0_S_0:
@@ -87,6 +132,7 @@ export default {
         },
         fillCalendar: function() {
             this.weeks = [];
+            this.refs = {};
             var m = Moment(this.mY).startOf('month').startOf('week').clone();
 
             var isToday = false;
@@ -97,10 +143,12 @@ export default {
             for (var i = 0; i < ROWS; i++) {
                 var week = []
                 for (var j = 0; j < COLUMNS; j++) {
-                    week.push({
+                    var d = {
                         moment: m.clone(),
                         style: this.getStyle(m)
-                    });
+                    };
+                    week.push(d);
+                    this.refs[m.format(REF_FORMAT)] = d;
                     m.add(1, 'days');
                 }
 

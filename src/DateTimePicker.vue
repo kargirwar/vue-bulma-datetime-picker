@@ -55,12 +55,12 @@ export default {
     },
     data () {
         return {
-            mY1: {},
-            mY2: {},
+            mY1: null,
+            mY2: null,
             isActive: false,
             store: {
-                d1: {},
-                d2: {},
+                d1: null,
+                d2: null,
                 state: F_0_S_0
             }
         }
@@ -100,7 +100,39 @@ export default {
         },
         onDateSelect: function(m) {
             console.log(m.format('DD-MMM'));
+            switch (this.store.state) {
+            case F_0_S_0:
+                this.f0s0(m);
+                break;
+
+            case F_1_S_0:
+                this.f1s0(m);
+                break;
+
+            case F_1_S_1:
+                this.f1s1(m);
+                break;
+            }
         },
+        f0s0: function(m) {
+            //initial click
+            var o = this.store;
+            Object.assign(o, {d1: m, state: F_1_S_0});
+        },
+        f1s0: function(m) {
+            //one date has been selected
+            var o = this.store;
+            if (m.isSameOrBefore(o.d1)) {
+                Object.assign(o, {d1: m, d2: null, state: F_1_S_0});
+                return;
+            }
+            Object.assign(o, {d2: m, state: F_1_S_1});
+        },
+        f1s1: function(m) {
+            //both dates have been selected. A new selection
+            var o = this.store;
+            Object.assign(o, {d1: m, d2: null, state: F_1_S_0});
+        }
     },
     computed: {
         month1: function() {
