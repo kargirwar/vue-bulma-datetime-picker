@@ -15,12 +15,14 @@
                     .column
                         calendar(
                             :mY="mY1"
-                            :state="state"
+                            :store="store"
+                            v-on:dateSelected="onDateSelect"
                         )
                     .column
                         calendar(
                             :mY="mY2"
-                            :state="state"
+                            :store="store"
+                            v-on:dateSelected="onDateSelect"
                         )
                 .columns
                     .column
@@ -38,7 +40,6 @@ const F_0_S_0 = "f-0-s-0";
 const F_1_S_0 = "f-1-s-0";
 const F_1_S_1 = "f-1-s-1";
 const F_0_S_1 = "f-1-s-1";//invalid state
-const REF_FORMAT = 'YYYY-MM-DD';
 
 export default {
     props: {
@@ -57,7 +58,7 @@ export default {
             mY1: {},
             mY2: {},
             isActive: false,
-            state: {
+            store: {
                 d1: {},
                 d2: {},
                 state: F_0_S_0
@@ -96,7 +97,10 @@ export default {
             console.log("nextMonth");
             this.mY1 = Moment(this.mY1).add(1, 'months').toObject();
             this.mY2 = Moment(this.mY2).add(1, 'months').toObject();
-        }
+        },
+        onDateSelect: function(m) {
+            console.log(m.format('DD-MMM'));
+        },
     },
     computed: {
         month1: function() {

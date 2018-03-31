@@ -28,7 +28,7 @@ export default {
             type: Object,
             required: true
         },
-        state: {
+        store: {
             type: Object,
             required: true
         }
@@ -83,81 +83,8 @@ export default {
         },
         onClick: function(d) {
             console.log(d.moment.format(REF_FORMAT));
-            //switch (this.state) {
-            //case F_0_S_0:
-                //this.f0s0(d);
-                //break;
-            //case F_1_S_0:
-                //this.f1s0(d);
-                //break;
-            //case F_1_S_1:
-                //this.f1s1(d);
-                //break;
-            //case F_0_S_1:
-                //return;
-            //}
+            this.$emit('dateSelected', d.moment);
         },
-        f0s0: function(d) {
-            //no date selected yet
-            this.d1 = d;
-            this.d1.style.selected = true;
-            this.state = F_1_S_0;
-        },
-        f1s0: function(d) {
-            //check if second date is after first, otherwise mark this as the first date
-            if (Moment(d.moment).isSameOrAfter(this.d1.moment)) {
-                this.d2 = d;
-                this.d2.style.selected = true;
-                this.d2.style.range = false;
-                this.state = F_1_S_1;
-                this.showSelectedRange();
-                return;
-            }
-
-            //unselect the original d1 and set a new d1
-            this.d1.style.selected = false;
-            this.d1 = d;
-            this.d2 = null;
-            this.d1.style.selected = true;
-            this.state = F_1_S_0;
-        },
-        f1s1: function(d) {
-            //unselect already selected ones. start afresh
-            this.clearRange();
-            this.d1.style.selected = null;
-            this.d2.style.selected = null;
-            this.d1 = null;
-            this.d2 = null;
-            this.f0s0(d);
-        },
-        clearRange: function() {
-            var start = Moment(this.d1.moment);
-            var m = start.add(1, 'days');
-            while (m.isBefore(this.d2.moment)) {
-                var d = this.refs[m.format(REF_FORMAT)];
-                d.style.range = false;
-                m.add(1, 'days');
-            }
-        },
-        showSelectedRange: function() {
-            //from d1 through d2 set range = true
-            var start = Moment(this.d1.moment);
-            var m = start.add(1, 'days');
-            while (m.isBefore(this.d2.moment)) {
-                var d = this.refs[m.format(REF_FORMAT)];
-                d.style.range = true;
-                m.add(1, 'days');
-            }
-        },
-        //render: function() {
-            ////month of the starting date
-            //var mY1 = Moment().month(this.month1).year(this.year1);
-            //this.fillCalendar(mY1, this.m1['weeks']);
-//
-            //next month
-            //var mY2 = Moment().month(this.month2).year(this.year2);
-            //this.fillCalendar(mY2, this.m2['weeks']);
-        //},
         fillCalendar: function() {
             this.weeks = [];
             var m = Moment(this.mY).startOf('month').startOf('week').clone();
@@ -170,10 +97,6 @@ export default {
             for (var i = 0; i < ROWS; i++) {
                 var week = []
                 for (var j = 0; j < COLUMNS; j++) {
-                    //isToday = Moment().isSame(m, 'day');
-                    //isOtherMonth = m.isSame(this.mY, 'month') ? false : true;
-                    //isSelected = (m.isSame(this.dt1) || m.isSame(this.dt2)) ? true : false;
-
                     week.push({
                         moment: m.clone(),
                         style: this.getStyle(m)
