@@ -82,6 +82,14 @@ export default {
         },
         onMouseOut: function(d) {
         },
+        clearRange: function() {
+            for (var i = 0; i < this.weeks.length; i++) {
+                for (var j = 0; j < this.weeks[i].length; j++) {
+                    var c = this.weeks[i][j];
+                    c.style.range = false;
+                }
+            }
+        },
         updateRange: function(m) {
             if (!m) {
                 return;
@@ -93,11 +101,11 @@ export default {
                     return;
             }
 
-            //highlight everything from d1 upto d
+            //highlight everything from d1 upto m
             for (var i = 0; i < this.weeks.length; i++) {
                 for (var j = 0; j < this.weeks[i].length; j++) {
                     var c = this.weeks[i][j];
-                    if (c.moment.isAfter(this.d1) && c.moment.isSameOrBefore(m)) {
+                    if (c.moment.isAfter(this.d1) && c.moment.isSameOrBefore(m) && c.moment.isSame(this.mY, 'month')) {
                         c.style.range = true;  
                     } else {
                         c.style.range = false;
@@ -133,7 +141,10 @@ export default {
                 if (d) {
                     d = this.refs[d.format(REF_FORMAT)];
                     if (d) {
-                        d.style.selected = selected;
+                        //select only if this date is part of this month
+                        if (d.moment.isSame(this.mY, 'month')) {
+                            d.style.selected = selected;
+                        }
                     }
                 }
             }
@@ -145,6 +156,7 @@ export default {
             this.d1 = n.d1;
             this.d2 = n.d2;
             this.select(true);
+            this.clearRange();
         },
         f1s1: function(n, o) {
             //unselect older ones if any
@@ -231,19 +243,23 @@ export default {
                 style.today = true;
             }
 
-            switch (this.state) {
+            if (!m.isSame(this.mY, 'month')) {
+                return style;
+            }
+
+            switch (this.store.state) {
             case F_1_S_0:
-                if (m.isSame(this.d1.moment)) {
+                if (m.isSame(this.store.d1)) {
                     style.selected = true;
                 }
                 break;
 
             case F_1_S_1:
-                if (m.isSame(this.d1.moment) || m.isSame(this.d2.moment)) {
+                if (m.isSame(this.store.d1) || m.isSame(this.store.d2)) {
                     style.selected = true;
                 }
 
-                if (m.isAfter(this.d1.moment) && m.isBefore(this.d2.moment)) {
+                if (m.isAfter(this.store.d1) && m.isBefore(this.store.d2)) {
                     style.range = true;
                 }
                 break;
