@@ -14,12 +14,14 @@
                 .columns
                     .column
                         calendar(
+                            :id="1"
                             :mY="mY1"
                             :store="store"
                             v-on:dateSelected="onDateSelect"
                         )
                     .column
                         calendar(
+                            :id="2"
                             :mY="mY2"
                             :store="store"
                             v-on:dateSelected="onDateSelect"

@@ -8,14 +8,16 @@
                 td(
                     v-bind:class="d.style"
                     @click="onClick(d)"
-                    @mouseover="updateRange(d)"
-                    @mouseout="updateRange(d)"
+                    @mouseover="onMouseOver(d)"
+                    @mouseout="onMouseOut(d)"
                     v-for="d in week") {{d.moment.format('D')}}
 
 </template>
 
 <script>
 import Moment from 'moment';
+import {EventBus} from './EventBus.js';
+
 const ROWS = 6;
 const COLUMNS = 7;
 const F_0_S_0 = "f-0-s-0";
@@ -33,6 +35,10 @@ export default {
         store: {
             type: Object,
             required: true
+        },
+        id: {
+            type: Number,
+            required: true
         }
     },
     data () {
@@ -45,7 +51,12 @@ export default {
         }
     },
     created() {
+        console.log(this.id);
         this.fillCalendar();
+        EventBus.$on('mouse-in', (o) => {
+            console.log(JSON.stringify(o));
+            this.updateRange(o.moment);
+        });
     },
     watch: {
         mY: function(n, o) {
@@ -63,8 +74,16 @@ export default {
         }
     },
     methods: {
-        updateRange: function(d) {
-            if (!d) {
+        onMouseOver: function(d) {
+            EventBus.$emit('mouse-in', {
+                id: this.id,
+                moment: d.moment
+            });
+        },
+        onMouseOut: function(d) {
+        },
+        updateRange: function(m) {
+            if (!m) {
                 return;
             }
 
@@ -78,7 +97,7 @@ export default {
             for (var i = 0; i < this.weeks.length; i++) {
                 for (var j = 0; j < this.weeks[i].length; j++) {
                     var c = this.weeks[i][j];
-                    if (c.moment.isAfter(this.d1) && c.moment.isSameOrBefore(d.moment)) {
+                    if (c.moment.isAfter(this.d1) && c.moment.isSameOrBefore(m)) {
                         c.style.range = true;  
                     } else {
                         c.style.range = false;
@@ -136,7 +155,7 @@ export default {
             this.select(true);
             var d = this.refs[this.d2.format(REF_FORMAT)];
             if (d) {
-                this.updateRange(d);
+                this.updateRange(d.moment);
                 d.style.range = false;
             }
         },
