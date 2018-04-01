@@ -8,6 +8,8 @@
                 td(
                     v-bind:class="d.style"
                     @click="onClick(d)"
+                    @mouseover="updateRange(d)"
+                    @mouseout="updateRange(d)"
                     v-for="d in week") {{d.moment.format('D')}}
 
 </template>
@@ -61,6 +63,29 @@ export default {
         }
     },
     methods: {
+        updateRange: function(d) {
+            if (!d) {
+                return;
+            }
+
+            switch (this.store.state) {
+                case F_0_S_0:
+                case F_1_S_1:
+                    return;
+            }
+
+            //highlight everything from d1 upto d
+            for (var i = 0; i < this.weeks.length; i++) {
+                for (var j = 0; j < this.weeks[i].length; j++) {
+                    var c = this.weeks[i][j];
+                    if (c.moment.isAfter(this.d1) && c.moment.isSameOrBefore(d.moment)) {
+                        c.style.range = true;  
+                    } else {
+                        c.style.range = false;
+                    }
+                }
+            }
+        },
         isEmpty: function(obj) {
             //https://stackoverflow.com/questions/679915/how-do-i-test-for-an-empty-javascript-object
             for(var prop in obj) {
@@ -76,23 +101,43 @@ export default {
             case F_1_S_0:
                 this.f1s0(n, o);
                 break;
+
+            case F_1_S_1:
+                this.f1s1(n, o);
+                break;
+            }
+        },
+        select: function(selected) {
+            var dates = [this.d1, this.d2];
+            for (var i = 0; i < dates.length; i++) {
+                var d = dates[i];
+                if (d) {
+                    d = this.refs[d.format(REF_FORMAT)];
+                    if (d) {
+                        d.style.selected = selected;
+                    }
+                }
             }
         },
         f1s0: function(n, o) {
-            var d;
-            if (this.d1) {
-                //unselect already selected , if any
-                d = this.refs[this.d1.format(REF_FORMAT)];
-                if (d) {
-                    d.style.selected = false;
-                }
-            }
+            //unselect older ones if any
+            this.select(false);
             //save the new d1
             this.d1 = n.d1;
-            d = this.refs[this.d1.format(REF_FORMAT)];
-            console.log("d: " + JSON.stringify(d));
+            this.d2 = n.d2;
+            this.select(true);
+        },
+        f1s1: function(n, o) {
+            //unselect older ones if any
+            this.select(false);
+            //save the new d1
+            this.d1 = n.d1;
+            this.d2 = n.d2;
+            this.select(true);
+            var d = this.refs[this.d2.format(REF_FORMAT)];
             if (d) {
-                d.style.selected = true;
+                this.updateRange(d);
+                d.style.range = false;
             }
         },
         highlightRange: function(curr) {
